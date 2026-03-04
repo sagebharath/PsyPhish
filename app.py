@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 import numpy as np
 from xgboost import XGBClassifier
+from urllib.parse import urlparse
 
 from url_features import extract_url_features
 from crawler_features import crawl_website
@@ -88,9 +89,19 @@ def analyze(data: URLInput):
             if risk < 30: risk += 10
         if url_f["path_length"] > 50:
             reasons.append("Unusually long URL path")
+            if risk < 30: risk += 10
         if url_f["num_parameters"] > 3:
             reasons.append("Multiple query parameters")
-            
+            if risk < 30: risk += 10
+        if url_f["subdomain_count"] == 1 and url_f["path_length"] < 20 and not url_f["num_digits"]:
+            # Suspicious combination of newly registered domains with random paths
+            import re
+            p = urlparse(url)
+            # Checks for random characters (no dict words)
+            if re.match(r'^/[a-z]{6,10}/?$', p.path):
+                reasons.append("Suspicious random path generation")
+                if risk < 80: risk += 60
+                
         # Ensure risk stays within 0-100 bounds
         risk = min(100.0, risk)
         if risk > 70: status = "Phishing"

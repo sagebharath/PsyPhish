@@ -3,7 +3,7 @@ from url_features import extract_url_features
 from crawler_features import crawl_website
 from reputation_features import get_virustotal_score, google_safe_browsing_flag
 
-url = "http://secure-login-bank.tk/login"
+url = "https://quantasey.com/tsgindcz/"
 
 url_f = extract_url_features(url)
 crawl_f = crawl_website(url)
